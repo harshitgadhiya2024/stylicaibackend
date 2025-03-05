@@ -1,3 +1,6 @@
 *.pkl filter=lfs diff=lfs merge=lfs -text
 *.onnx filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
+ckpt/humanparsing/*.onnx filter=lfs diff=lfs merge=lfs -text
+ckpt/openpose/ckpts/*.pth filter=lfs diff=lfs merge=lfs -text
+ckpt/densepose/*.pkl filter=lfs diff=lfs merge=lfs -text
