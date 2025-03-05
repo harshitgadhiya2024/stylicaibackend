@@ -431,13 +431,14 @@ def photoshoot():
         folder_person_name = request.form.get("folder_name")
         folder_image_store_path = f"static/uploads/{folder_person_name}"
         os.makedirs(folder_image_store_path, exist_ok=True)
+        print("request are coming")
         file1 = request.files.get("garment_file")
         if file1 and file1.filename != "":
             exten = file1.filename.split(".")[-1]
             file1_path = os.path.join(folder_image_store_path, f"garment.{exten}")
             file1.save(file1_path)
             files_uploaded.append(file1_path.replace("\\", "/"))
-
+        print("garment file uploaded")
         # Handle second file
         file2 = request.files.get("model_file")
         if file2 and file2.filename != "":
@@ -445,7 +446,7 @@ def photoshoot():
             file2_path = os.path.join(folder_image_store_path, f"model.{exten1}")
             file2.save(file2_path)
             files_uploaded.append(file2_path.replace("\\", "/"))
-            
+        print("model1 file uploaded")  
         # Handle second file
         file3 = request.files.get("model_file1")
         if file3 and file3.filename != "":
@@ -453,7 +454,7 @@ def photoshoot():
             file3_path = os.path.join(folder_image_store_path, f"model1.{exten3}")
             file3.save(file3_path)
             files_uploaded.append(file3_path.replace("\\", "/"))
-            
+        print("model2 file uploaded") 
         # Handle second file
         file4 = request.files.get("model_file2")
         if file4 and file4.filename != "":
@@ -461,7 +462,7 @@ def photoshoot():
             file4_path = os.path.join(folder_image_store_path, f"model.{exten4}")
             file4.save(file4_path)
             files_uploaded.append(file4_path.replace("\\", "/"))
-
+        print("model3 file uploaded")
         if not files_uploaded:
             return "No files selected for upload"
         
@@ -473,9 +474,11 @@ def photoshoot():
         for index in index_list:
             human_image = Image.open(files_uploaded[index])
             garment_image = Image.open(files_uploaded[0])
+            print("generate photoshoot")
             output_folder_image_store_path = os.path.join(folder_image_store_path, f"output{index}.jpg")
-            all_output_list.append(output_folder_image_store_path)
             threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
+            all_output_list.append(f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output{index}.jpg")
+            print("generated_successfully")
         concurrent.futures.wait(threads)
         response = {"status_code": 200, "data": {"output_file": all_output_list}}
         return response
