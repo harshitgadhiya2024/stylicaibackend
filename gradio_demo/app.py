@@ -238,9 +238,20 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
 
     if is_checked_crop:
         out_img = images[0].resize(crop_size)        
-        human_img_orig.paste(out_img, (int(left), int(top)))    
+        human_img_orig.paste(out_img, (int(left), int(top)))
+        try:
+            human_img_orig.save("output.jpg")
+        except:
+            print(human_img_orig)
+            pass    
         return human_img_orig, mask_gray
     else:
+        human_img_orig = images[0]
+        try:
+            human_img_orig.save("output.jpg")
+        except:
+            print(human_img_orig)
+            pass
         return images[0], mask_gray
     # return images[0], mask_gray
 
