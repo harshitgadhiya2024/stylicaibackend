@@ -331,6 +331,7 @@ class BasicTransformerBlock(nn.Module):
         gligen_kwargs = cross_attention_kwargs.pop("gligen", None)
 
 
+        #type2
         modify_norm_hidden_states = torch.cat([norm_hidden_states,garment_features[curr_garment_feat_idx]], dim=1)
         curr_garment_feat_idx +=1
         attn_output = self.attn1(
@@ -345,6 +346,8 @@ class BasicTransformerBlock(nn.Module):
         elif self.use_ada_layer_norm_single:
             attn_output = gate_msa * attn_output
 
+
+        #type2
         hidden_states = attn_output[:,:hidden_states.shape[-2],:] + hidden_states
 
 

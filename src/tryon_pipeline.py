@@ -370,7 +370,6 @@ class StableDiffusionXLInpaintPipeline(
         "text_encoder_2",
         "image_encoder",
         "feature_extractor",
-        "unet_encoder",
     ]
     _callback_tensor_inputs = [
         "latents",
@@ -392,7 +391,6 @@ class StableDiffusionXLInpaintPipeline(
         tokenizer: CLIPTokenizer,
         tokenizer_2: CLIPTokenizer,
         unet: UNet2DConditionModel,
-        unet_encoder: UNet2DConditionModel,
         scheduler: KarrasDiffusionSchedulers,
         image_encoder: CLIPVisionModelWithProjection = None,
         feature_extractor: CLIPImageProcessor = None,
@@ -409,7 +407,6 @@ class StableDiffusionXLInpaintPipeline(
             tokenizer_2=tokenizer_2,
             unet=unet,
             image_encoder=image_encoder,
-            unet_encoder=unet_encoder,
             feature_extractor=feature_extractor,
             scheduler=scheduler,
         )
@@ -1722,8 +1719,8 @@ class StableDiffusionXLInpaintPipeline(
                 ip_adapter_image, device, batch_size * num_images_per_prompt
             )
 
-            #project outside for loop
-            image_embeds = self.unet.encoder_hid_proj(image_embeds).to(prompt_embeds.dtype)
+        #project outside for loop
+        image_embeds = self.unet.encoder_hid_proj(image_embeds).to(prompt_embeds.dtype)
 
 
         # 11. Denoising loop

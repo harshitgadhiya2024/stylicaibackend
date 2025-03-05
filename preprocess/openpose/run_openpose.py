@@ -1,6 +1,6 @@
 import pdb
 
-# import config
+import config
 from pathlib import Path
 import sys
 
@@ -28,12 +28,12 @@ import pdb
 
 class OpenPose:
     def __init__(self, gpu_id: int):
-        self.gpu_id = gpu_id
-        torch.cuda.set_device(gpu_id)
+        # self.gpu_id = gpu_id
+        # torch.cuda.set_device(gpu_id)
         self.preprocessor = OpenposeDetector()
 
     def __call__(self, input_image, resolution=384):
-        torch.cuda.set_device(self.gpu_id)
+        # torch.cuda.set_device(self.gpu_id)
         if isinstance(input_image, Image.Image):
             input_image = np.asarray(input_image)
         elif type(input_image) == str:

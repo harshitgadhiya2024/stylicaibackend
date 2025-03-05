@@ -78,54 +78,6 @@ class PerceiverAttention(nn.Module):
         return self.to_out(out)
 
 
-class CrossAttention(nn.Module):
-    def __init__(self, *, dim, dim_head=64, heads=8):
-        super().__init__()
-        self.scale = dim_head**-0.5
-        self.dim_head = dim_head
-        self.heads = heads
-        inner_dim = dim_head * heads
-
-        self.norm1 = nn.LayerNorm(dim)
-        self.norm2 = nn.LayerNorm(dim)
-
-        self.to_q = nn.Linear(dim, inner_dim, bias=False)
-        self.to_k = nn.Linear(dim, inner_dim, bias=False)
-        self.to_v = nn.Linear(dim, inner_dim, bias=False)
-        self.to_out = nn.Linear(inner_dim, dim, bias=False)
-
-
-    def forward(self, x, x2):
-        """
-        Args:
-            x (torch.Tensor): image features
-                shape (b, n1, D)
-            latent (torch.Tensor): latent features
-                shape (b, n2, D)
-        """
-        x = self.norm1(x)
-        x2 = self.norm2(x2)
-
-        b, l, _ = x2.shape
-
-        q = self.to_q(x)
-        k = self.to_k(x2)
-        v = self.to_v(x2)
-
-        q = reshape_tensor(q, self.heads)
-        k = reshape_tensor(k, self.heads)
-        v = reshape_tensor(v, self.heads)
-
-        # attention
-        scale = 1 / math.sqrt(math.sqrt(self.dim_head))
-        weight = (q * scale) @ (k * scale).transpose(-2, -1)  # More stable with f16 than dividing afterwards
-        weight = torch.softmax(weight.float(), dim=-1).type(weight.dtype)
-        out = weight @ v
-
-        out = out.permute(0, 2, 1, 3).reshape(b, l, -1)
-        return self.to_out(out)
-
-
 class Resampler(nn.Module):
     def __init__(
         self,
@@ -142,6 +94,7 @@ class Resampler(nn.Module):
         num_latents_mean_pooled: int = 0,  # number of latents derived from mean pooled representation of the sequence
     ):
         super().__init__()
+        self.pos_emb = nn.Embedding(max_seq_len, embedding_dim) if apply_pos_emb else None
 
         self.latents = nn.Parameter(torch.randn(1, num_queries, dim) / dim**0.5)
 
@@ -149,6 +102,16 @@ class Resampler(nn.Module):
 
         self.proj_out = nn.Linear(dim, output_dim)
         self.norm_out = nn.LayerNorm(output_dim)
+
+        self.to_latents_from_mean_pooled_seq = (
+            nn.Sequential(
+                nn.LayerNorm(dim),
+                nn.Linear(dim, dim * num_latents_mean_pooled),
+                Rearrange("b (n d) -> b n d", n=num_latents_mean_pooled),
+            )
+            if num_latents_mean_pooled > 0
+            else None
+        )
 
         self.layers = nn.ModuleList([])
         for _ in range(depth):
@@ -162,11 +125,19 @@ class Resampler(nn.Module):
             )
 
     def forward(self, x):
+        if self.pos_emb is not None:
+            n, device = x.shape[1], x.device
+            pos_emb = self.pos_emb(torch.arange(n, device=device))
+            x = x + pos_emb
 
         latents = self.latents.repeat(x.size(0), 1, 1)
 
         x = self.proj_in(x)
 
+        if self.to_latents_from_mean_pooled_seq:
+            meanpooled_seq = masked_mean(x, dim=1, mask=torch.ones(x.shape[:2], device=x.device, dtype=torch.bool))
+            meanpooled_latents = self.to_latents_from_mean_pooled_seq(meanpooled_seq)
+            latents = torch.cat((meanpooled_latents, latents), dim=-2)
 
         for attn, ff in self.layers:
             latents = attn(x, latents) + latents
@@ -174,7 +145,6 @@ class Resampler(nn.Module):
 
         latents = self.proj_out(latents)
         return self.norm_out(latents)
-
 
 
 def masked_mean(t, *, dim, mask=None):
