@@ -379,6 +379,7 @@ def take_photo():
     :return: superadmin template
     """
     try:
+        print("coming in take photo")
         files_uploaded = []
         folder_person_name = request.form.get("folder_name")
         folder_image_store_path = f"static/uploads/{folder_person_name}"
@@ -389,7 +390,7 @@ def take_photo():
             file1_path = os.path.join(folder_image_store_path, f"garment.{exten}")
             file1.save(file1_path)
             files_uploaded.append(file1_path.replace("\\", "/"))
-
+        print("upload garment successfully")
         # Handle second file
         file2 = request.files.get("model_file")
         if file2 and file2.filename != "":
@@ -397,6 +398,7 @@ def take_photo():
             file2_path = os.path.join(folder_image_store_path, f"model.{exten1}")
             file2.save(file2_path)
             files_uploaded.append(file2_path.replace("\\", "/"))
+        print("upload model successfully")
 
         if not files_uploaded:
             return "No files selected for upload"
@@ -407,9 +409,11 @@ def take_photo():
         # start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42)
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
         threads = []
+        print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
         threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
         concurrent.futures.wait(threads)
+        print("generated_successfully")
         response = {"status_code": 200, "data": {"output_file": output_folder_image_store_path.replace("\\", "/")}}
         return response
 
