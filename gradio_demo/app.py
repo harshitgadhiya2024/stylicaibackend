@@ -414,7 +414,7 @@ def take_photo():
         threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
         concurrent.futures.wait(threads)
         print("generated_successfully")
-        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path}***output.jpg"}}
+        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace("/", "---")}***output.jpg"}}
         return response
 
     except Exception as e:
@@ -490,10 +490,12 @@ def folder_store_path(folder_path_image):
     :return: superadmin template
     """
     try:
+        print(folder_path_image)
         all_list = folder_path_image.split("***")
         folder_path = all_list[0].replace("---", "/")
         filename = all_list[1]
-        send_from_directory(folder_path, filename, as_attachment=True)
+        print(folder_path, filename)
+        return send_from_directory(folder_path, filename, as_attachment=True)
 
     except Exception as e:
         return {"message": "data is not present"}
