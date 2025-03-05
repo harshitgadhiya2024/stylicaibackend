@@ -26,7 +26,7 @@ from preprocess.openpose.run_openpose import OpenPose
 from detectron2.data.detection_utils import convert_PIL_to_numpy,_apply_exif_orientation
 from torchvision.transforms.functional import to_pil_image
 from flask import (flash, Flask, redirect, render_template, request,
-                   session, url_for, send_file, jsonify)
+                   session, url_for, send_file, jsonify, send_from_directory)
 from flask_cors import CORS
 import uuid
 import concurrent.futures
@@ -366,11 +366,11 @@ for ex_human in human_list_path:
 #
 #
 #     try_button.click(fn=start_tryon, inputs=[imgs, garm_img, prompt, is_checked,is_checked_crop, denoise_steps, seed], outputs=[image_out,masked_img], api_name='tryon')
-from PIL import Image
-human_image_path = "gradio_demo/try/model_image.webp"
-garment_image_path = "gradio_demo/try/garment.webp"
-human_image_path = os.path.abspath(human_image_path)
-garment_image_path = os.path.abspath(garment_image_path)
+# from PIL import Image
+# human_image_path = "gradio_demo/try/model_image.webp"
+# garment_image_path = "gradio_demo/try/garment.webp"
+# human_image_path = os.path.abspath(human_image_path)
+# garment_image_path = os.path.abspath(garment_image_path)
 
 @app.route("/stylic/take-photo", methods=["GET", "POST"])
 def take_photo():
@@ -414,7 +414,7 @@ def take_photo():
         threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
         concurrent.futures.wait(threads)
         print("generated_successfully")
-        response = {"status_code": 200, "data": {"output_file": output_folder_image_store_path.replace("\\", "/")}}
+        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path}***output.jpg"}}
         return response
 
     except Exception as e:
@@ -479,6 +479,21 @@ def photoshoot():
         concurrent.futures.wait(threads)
         response = {"status_code": 200, "data": {"output_file": all_output_list}}
         return response
+
+    except Exception as e:
+        return {"message": "data is not present"}
+
+@app.route("/download_photo/<folder_path_image>", methods=["GET"])
+def folder_store_path(folder_path_image):
+    """
+    In this route we can handling superadmin data
+    :return: superadmin template
+    """
+    try:
+        all_list = folder_path_image.split("***")
+        folder_path = all_list[0].replace("---", "/")
+        filename = all_list[1]
+        send_from_directory(folder_path, filename, as_attachment=True)
 
     except Exception as e:
         return {"message": "data is not present"}
