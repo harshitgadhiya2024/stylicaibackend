@@ -414,7 +414,7 @@ def take_photo():
         threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
         concurrent.futures.wait(threads)
         print("generated_successfully")
-        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace("/", "---")}***output.jpg"}}
+        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output.jpg"}}
         return response
 
     except Exception as e:
