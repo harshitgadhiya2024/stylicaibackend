@@ -411,8 +411,8 @@ def take_photo():
         threads = []
         print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
-        threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
-        concurrent.futures.wait(threads)
+        start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path)
+        # concurrent.futures.wait(threads)
         print("generated_successfully")
         response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output.jpg"}}
         return response
@@ -476,10 +476,10 @@ def photoshoot():
             garment_image = Image.open(files_uploaded[0])
             print("generate photoshoot")
             output_folder_image_store_path = os.path.join(folder_image_store_path, f"output{index}.jpg")
-            threads.append(executor.submit(start_tryon, {"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path))
+            start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path)
             all_output_list.append(f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output{index}.jpg")
-            print("generated_successfully")
-        concurrent.futures.wait(threads)
+        # concurrent.futures.wait(threads)
+        print("generated_successfully")
         response = {"status_code": 200, "data": {"output_file": all_output_list}}
         return response
 
