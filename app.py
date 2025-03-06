@@ -205,8 +205,11 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
         if is_checked:
             print("coming in here")
             print(human_img)
-            # keypoints = openpose_model(human_img.resize((384,512)))
-            keypoints = {"pose_keypoints_2d": []}
+            if category=="lower_body":
+                keypoints = {"pose_keypoints_2d": []}
+            else:
+                keypoints = openpose_model(human_img.resize((384,512)))
+            
             print("bsdhjbajdhb")
             model_parse, _ = parsing_model(human_img.resize((384,512)))
             print("newdata")
