@@ -52,6 +52,7 @@ def refine_mask(mask):
     return refine_mask
 
 def get_mask_location(model_type, category, model_parse: Image.Image, keypoint: dict, width=384,height=512):
+    print(category)
     im_parse = model_parse.resize((width, height), Image.NEAREST)
     parse_array = np.array(im_parse)
 
@@ -76,6 +77,7 @@ def get_mask_location(model_type, category, model_parse: Image.Image, keypoint: 
 
     arms_left = (parse_array == 14).astype(np.float32)
     arms_right = (parse_array == 15).astype(np.float32)
+    print("show generated")
 
     if category == 'dresses':
         parse_mask = (parse_array == 7).astype(np.float32) + \
@@ -102,7 +104,7 @@ def get_mask_location(model_type, category, model_parse: Image.Image, keypoint: 
         parser_mask_changeable += np.logical_and(parse_array, np.logical_not(parser_mask_fixed))
     else:
         raise NotImplementedError
-
+    print("masking generated")
     # Load pose points
     pose_data = keypoint["pose_keypoints_2d"]
     pose_data = np.array(pose_data)
