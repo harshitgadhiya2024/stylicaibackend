@@ -397,6 +397,7 @@ def take_photo():
         files_uploaded = []
         folder_person_name = request.form.get("folder_name")
         category = request.form.get("category")
+        print(category)
         folder_image_store_path = f"static/uploads/{folder_person_name}"
         os.makedirs(folder_image_store_path, exist_ok=True)
         file1 = request.files.get("garment_file")
