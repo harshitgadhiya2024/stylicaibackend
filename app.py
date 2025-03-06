@@ -205,11 +205,12 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
         if is_checked:
             print("coming in here")
             print(human_img)
-            keypoints = openpose_model(human_img.resize((384,512)))
+            # keypoints = openpose_model(human_img.resize((384,512)))
+            keypoints = {"pose_keypoints_2d": []}
             print("bsdhjbajdhb")
             model_parse, _ = parsing_model(human_img.resize((384,512)))
             print("newdata")
-            mask, mask_gray = get_mask_location('hd', category)
+            mask, mask_gray = get_mask_location('hd', category, model_parse, keypoints)
             mask = mask.resize((768,1024))
         else:
             mask = pil_to_binary_mask(dict['layers'][0].convert("RGB").resize((768, 1024)))
