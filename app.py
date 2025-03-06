@@ -201,8 +201,9 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
             human_img = human_img_orig.resize((768,1024))
         print("task2")
 
-
+        print(is_checked)
         if is_checked:
+            print("coming in here")
             keypoints = openpose_model(human_img.resize((384,512)))
             model_parse, _ = parsing_model(human_img.resize((384,512)))
             print("newdata")
