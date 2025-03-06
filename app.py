@@ -179,7 +179,7 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
         openpose_model.preprocessor.body_estimation.model.to(device)
         pipe.to(device)
         pipe.unet_encoder.to(device)
-
+        print("task1")
         garm_img= garm_img.convert("RGB").resize((768,1024))
         human_img_orig = dict["background"].convert("RGB")    
         
@@ -196,6 +196,7 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
             human_img = cropped_img.resize((768,1024))
         else:
             human_img = human_img_orig.resize((768,1024))
+        print("task2")
 
 
         if is_checked:
@@ -209,10 +210,12 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
             # mask = mask.unsqueeze(0)
         mask_gray = (1-transforms.ToTensor()(mask)) * tensor_transfrom(human_img)
         mask_gray = to_pil_image((mask_gray+1.0)/2.0)
+        print("task3")
 
 
         human_img_arg = _apply_exif_orientation(human_img.resize((384,512)))
         human_img_arg = convert_PIL_to_numpy(human_img_arg, format="BGR")
+        print("task4")
         
         
         yaml_file_path = os.path.abspath('configs/densepose_rcnn_R_50_FPN_s1x.yaml')
@@ -222,6 +225,7 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
         pose_img = args.func(args,human_img_arg)    
         pose_img = pose_img[:,:,::-1]    
         pose_img = Image.fromarray(pose_img).resize((768,1024))
+        print("task5")
         
         with torch.no_grad():
             # Extract the images
@@ -229,6 +233,8 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
                 with torch.no_grad():
                     prompt = "model is wearing " + garment_des
                     negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"
+                    print("task6")
+                    
                     with torch.inference_mode():
                         (
                             prompt_embeds,
@@ -241,7 +247,8 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
                             do_classifier_free_guidance=True,
                             negative_prompt=negative_prompt,
                         )
-                                        
+                        print("task7")
+                                 
                         prompt = "a photo of " + garment_des
                         negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"
                         if not isinstance(prompt, List):
@@ -262,6 +269,7 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
                             )
 
 
+                        print("task8")
 
                         pose_img =  tensor_transfrom(pose_img).unsqueeze(0).to(device,torch.float16)
                         garm_tensor =  tensor_transfrom(garm_img).unsqueeze(0).to(device,torch.float16)
