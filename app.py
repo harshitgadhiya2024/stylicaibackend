@@ -177,7 +177,7 @@ pipe = TryonPipeline.from_pretrained(
 )
 pipe.unet_encoder = UNet_Encoder
 
-def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_steps,seed, folder_image_store_path):
+def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_steps,seed, folder_image_store_path, category):
     try:
         openpose_model.preprocessor.body_estimation.model.to(device)
         pipe.to(device)
@@ -205,7 +205,7 @@ def start_tryon(dict,garm_img,garment_des,is_checked,is_checked_crop,denoise_ste
         if is_checked:
             keypoints = openpose_model(human_img.resize((384,512)))
             model_parse, _ = parsing_model(human_img.resize((384,512)))
-            mask, mask_gray = get_mask_location('hd', "upper_body", model_parse, keypoints)
+            mask, mask_gray = get_mask_location('hd', category, model_parse, keypoints)
             mask = mask.resize((768,1024))
         else:
             mask = pil_to_binary_mask(dict['layers'][0].convert("RGB").resize((768, 1024)))
@@ -395,6 +395,7 @@ def take_photo():
         print("coming in take photo")
         files_uploaded = []
         folder_person_name = request.form.get("folder_name")
+        category = request.form.get("category")
         folder_image_store_path = f"static/uploads/{folder_person_name}"
         os.makedirs(folder_image_store_path, exist_ok=True)
         file1 = request.files.get("garment_file")
@@ -424,7 +425,7 @@ def take_photo():
         threads = []
         print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
-        start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path)
+        start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path, category)
         # concurrent.futures.wait(threads)
         print("generated_successfully")
         response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output.jpg"}}
