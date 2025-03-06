@@ -30,6 +30,7 @@ from flask import (flash, Flask, redirect, render_template, request,
 from flask_cors import CORS
 import uuid
 import concurrent.futures
+from image_upscaler import process_upscaler
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -429,85 +430,18 @@ def take_photo():
         from PIL import Image
         human_image = Image.open(files_uploaded[1])
         garment_image = Image.open(files_uploaded[0])
-        # start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42)
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
-        threads = []
         print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
         start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path, category)
-        # concurrent.futures.wait(threads)
-        print("generated_successfully")
-        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output.jpg"}}
+        enhanced_image = process_upscaler(human_image, "", "", 42, 2, 0.6, 1.0, 6, 112, 144, 0.35, 18, "DDIM")
+        output_folder_upscale_image_store_path = os.path.join(folder_image_store_path, "output_enhancer.jpg")
+        enhanced_image[1].save(output_folder_upscale_image_store_path)
+        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output_enhancer.jpg"}}
         return response
 
     except Exception as e:
         return {"message": "data is not present"}
 
-@app.route("/stylic/take-photoshoot", methods=["GET", "POST"])
-def photoshoot():
-    """
-    In this route we can handling superadmin data
-    :return: superadmin template
-    """
-    try:
-        files_uploaded = []
-        folder_person_name = request.form.get("folder_name")
-        folder_image_store_path = f"static/uploads/{folder_person_name}"
-        os.makedirs(folder_image_store_path, exist_ok=True)
-        print("request are coming")
-        file1 = request.files.get("garment_file")
-        if file1 and file1.filename != "":
-            exten = file1.filename.split(".")[-1]
-            file1_path = os.path.join(folder_image_store_path, f"garment.{exten}")
-            file1.save(file1_path)
-            files_uploaded.append(file1_path.replace("\\", "/"))
-        print("garment file uploaded")
-        # Handle second file
-        file2 = request.files.get("model_file")
-        if file2 and file2.filename != "":
-            exten1 = file2.filename.split(".")[-1]
-            file2_path = os.path.join(folder_image_store_path, f"model.{exten1}")
-            file2.save(file2_path)
-            files_uploaded.append(file2_path.replace("\\", "/"))
-        print("model1 file uploaded")  
-        # Handle second file
-        file3 = request.files.get("model_file1")
-        if file3 and file3.filename != "":
-            exten3 = file3.filename.split(".")[-1]
-            file3_path = os.path.join(folder_image_store_path, f"model1.{exten3}")
-            file3.save(file3_path)
-            files_uploaded.append(file3_path.replace("\\", "/"))
-        print("model2 file uploaded") 
-        # Handle second file
-        file4 = request.files.get("model_file2")
-        if file4 and file4.filename != "":
-            exten4 = file4.filename.split(".")[-1]
-            file4_path = os.path.join(folder_image_store_path, f"model.{exten4}")
-            file4.save(file4_path)
-            files_uploaded.append(file4_path.replace("\\", "/"))
-        print("model3 file uploaded")
-        if not files_uploaded:
-            return "No files selected for upload"
-        
-        from PIL import Image
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
-        threads = []
-        index_list = [1,2,3]
-        all_output_list = []
-        for index in index_list:
-            human_image = Image.open(files_uploaded[index])
-            garment_image = Image.open(files_uploaded[0])
-            print("generate photoshoot")
-            output_folder_image_store_path = os.path.join(folder_image_store_path, f"output{index}.jpg")
-            start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path)
-            all_output_list.append(f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output{index}.jpg")
-        # concurrent.futures.wait(threads)
-        print("generated_successfully")
-        response = {"status_code": 200, "data": {"output_file": all_output_list}}
-        return response
-
-    except Exception as e:
-        return {"message": "data is not present"}
 
 @app.route("/download_photo/<folder_path_image>", methods=["GET"])
 def folder_store_path(folder_path_image):
@@ -537,3 +471,4 @@ def folder_store_path(folder_path_image):
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=80)
+    
