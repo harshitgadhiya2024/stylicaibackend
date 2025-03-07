@@ -30,7 +30,6 @@ from flask import (flash, Flask, redirect, render_template, request,
 from flask_cors import CORS
 import uuid
 import concurrent.futures
-from image_upscaler import process_upscaler
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 torch.cuda.empty_cache()
@@ -436,10 +435,10 @@ def take_photo():
         print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
         start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path, category)
-        enhanced_image = process_upscaler(human_image, "", "", 42, 2, 0.6, 1.0, 6, 112, 144, 0.35, 18, "DDIM")
-        output_folder_upscale_image_store_path = os.path.join(folder_image_store_path, "output_enhancer.jpg")
-        enhanced_image[1].save(output_folder_upscale_image_store_path)
-        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output_enhancer.jpg"}}
+        # enhanced_image = process_upscaler(human_image, "", "", 42, 2, 0.6, 1.0, 6, 112, 144, 0.35, 18, "DDIM")
+        # output_folder_upscale_image_store_path = os.path.join(folder_image_store_path, "output_enhancer.jpg")
+        # enhanced_image[1].save(output_folder_upscale_image_store_path)
+        response = {"status_code": 200, "data": {"output_file": f"http://139.84.138.54:80/download_photo/{folder_image_store_path.replace('/', '---')}***output.jpg"}}
         return response
 
     except Exception as e:
