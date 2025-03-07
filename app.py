@@ -33,6 +33,9 @@ import concurrent.futures
 from image_upscaler import process_upscaler
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+torch.cuda.empty_cache()
+torch.cuda.ipc_collect()
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 # create a flask app instance
 app = Flask(__name__)
