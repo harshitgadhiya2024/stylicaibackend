@@ -442,6 +442,7 @@ def take_photo():
         return response
 
     except Exception as e:
+        print(e)
         return {"message": "data is not present"}
 
 
@@ -460,6 +461,7 @@ def folder_store_path(folder_path_image):
         return send_from_directory(folder_path, filename, as_attachment=True)
 
     except Exception as e:
+        print(e)
         return {"message": "data is not present"}
 
 
