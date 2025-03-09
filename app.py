@@ -406,6 +406,8 @@ def take_photo():
         print("coming in take photo")
         files_uploaded = []
         folder_person_name = request.form.get("folder_name")
+        steps = request.form.get("steps")
+        seed = request.form.get("seed")
         category = request.form.get("category")
         print(category)
         folder_image_store_path = f"static/uploads/{folder_person_name}"
@@ -434,7 +436,7 @@ def take_photo():
         garment_image = Image.open(files_uploaded[0])
         print("generate photoshoot")
         output_folder_image_store_path = os.path.join(folder_image_store_path, "output.jpg")
-        start_tryon({"background": human_image}, garment_image, "", True, False, 30, 42, output_folder_image_store_path, category)
+        start_tryon({"background": human_image}, garment_image, "", True, False, int(steps), int(seed), output_folder_image_store_path, category)
         # enhanced_image = process_upscaler(human_image, "", "", 42, 2, 0.6, 1.0, 6, 112, 144, 0.35, 18, "DDIM")
         # output_folder_upscale_image_store_path = os.path.join(folder_image_store_path, "output_enhancer.jpg")
         # enhanced_image[1].save(output_folder_upscale_image_store_path)
